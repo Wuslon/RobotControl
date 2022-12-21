@@ -1,12 +1,22 @@
 package de.preusz.christian.myapplication;
 
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.Activity;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothManager;
+import android.content.Intent;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -25,9 +35,9 @@ public class MainActivity extends AppCompatActivity {
         public void onSensorChanged (SensorEvent event){
              float[] values = event.values;
 
-             xValue.setText(""+values[0]);
-             yValue.setText(""+values[1]);
-             zValue.setText(""+values[2]);
+             xValue.setText("" + values[0]/* + "\ny: " + values[1] + "\nz: " + values[2]*/);
+             yValue.setText("" + values[1]);
+             zValue.setText("" + values[2]);
         }
     };
 
@@ -35,6 +45,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        /* get Sensor Data*/
         sm = (SensorManager)getSystemService(SENSOR_SERVICE);
 
         xValue = (TextView) findViewById(R.id.xValueText);
@@ -48,6 +60,29 @@ public class MainActivity extends AppCompatActivity {
         else{
             Toast.makeText(getBaseContext(),"Error:No Game Rotation Sensor.",Toast.LENGTH_LONG).show();
         }
+
+        /* enable bluetooth */
+        BluetoothManager bluetoothManager = getSystemService(BluetoothManager.class);
+        BluetoothAdapter bluetoothAdapter = bluetoothManager.getAdapter();
+
+        ActivityResultLauncher activityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
+            @Override
+            public void onActivityResult(ActivityResult result) {
+            }
+        });
+
+
+        Button button_EnableBluetooth =(Button) findViewById(R.id.button_EnableBLuetooth);
+        button_EnableBluetooth.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (!bluetoothAdapter.isEnabled()){
+                    Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                    activityResultLauncher.launch(enableBtIntent);
+                }
+
+            }
+        });
     }
 
     @Override
