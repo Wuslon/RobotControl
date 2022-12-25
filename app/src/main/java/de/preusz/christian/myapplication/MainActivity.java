@@ -28,7 +28,9 @@ public class MainActivity extends AppCompatActivity {
     TextView yValue = null;
     TextView zValue = null;
 
+
     List list;
+    byte go = Commands.STOP;
     SensorEventListener sel = new SensorEventListener() {
         @Override
         public void onAccuracyChanged(Sensor sensor, int accuracy){}
@@ -68,11 +70,13 @@ public class MainActivity extends AppCompatActivity {
         ActivityResultLauncher activityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
             @Override
             public void onActivityResult(ActivityResult result) {
+                Intent i = new Intent(MainActivity.this, BluetoothSelection.class);
+                MainActivity.this.startActivity(i);
             }
         });
 
 
-        Button button_EnableBluetooth =(Button) findViewById(R.id.button_EnableBLuetooth);
+        Button button_EnableBluetooth = (Button) findViewById(R.id.button_EnableBLuetooth);
         button_EnableBluetooth.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -80,9 +84,27 @@ public class MainActivity extends AppCompatActivity {
                     Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
                     activityResultLauncher.launch(enableBtIntent);
                 }
-
+                else{
+                    Intent i = new Intent(MainActivity.this, BluetoothSelection.class);
+                    MainActivity.this.startActivity(i);
+                }
             }
         });
+
+        /* send data */
+        Button button_StartStop = (Button) findViewById(R.id.button_StartStop);
+        button_StartStop.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (go == Commands.STOP){
+                    go = Commands.GO;
+                }
+                else{
+                    go = Commands.STOP;
+                }
+            }
+        });
+
     }
 
     @Override
