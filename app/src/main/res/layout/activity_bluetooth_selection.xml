@@ -21,6 +21,8 @@
         android:id="@+id/spinner_BTDevices"
         android:layout_width="409dp"
         android:layout_height="wrap_content"
+        android:scrollbarAlwaysDrawHorizontalTrack="false"
+        android:visibility="visible"
         app:layout_constraintBottom_toTopOf="@+id/button_BTSearch"
         app:layout_constraintTop_toTopOf="parent"
         tools:layout_editor_absoluteX="1dp" />
