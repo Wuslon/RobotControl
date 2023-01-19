@@ -22,11 +22,15 @@ import android.widget.Spinner;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.Dictionary;
+import java.util.Hashtable;
 import java.util.Set;
 
 public class BluetoothSelection extends AppCompatActivity {
     public static final int REQUEST_ACCESS_COARSE_LOCATION = 1;
     ArrayList<String> BTDevices = new ArrayList<>();
+    Dictionary<String, String> dict = new Hashtable<String,String>();
+    BluetoothDevice SelectedDevice = null;
     //ArrayAdapter<String> arrayAdapter;
 
     @Override
@@ -37,6 +41,7 @@ public class BluetoothSelection extends AppCompatActivity {
         BluetoothManager bluetoothManager = getSystemService(BluetoothManager.class);
         BluetoothAdapter bluetoothAdapter = bluetoothManager.getAdapter();
 
+
         Set<BluetoothDevice> pairedDevices = bluetoothAdapter.getBondedDevices();
         Spinner BTDeviceNames = findViewById(R.id.spinner_BTDevices);
 
@@ -45,6 +50,7 @@ public class BluetoothSelection extends AppCompatActivity {
                 String deviceName = device.getName();
                 BTDevices.add(deviceName);
                 String deviceHardwareAddress = device.getAddress(); // MAC address
+                dict.put(deviceName, deviceHardwareAddress);
             }
         }
         ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, BTDevices);
@@ -55,6 +61,7 @@ public class BluetoothSelection extends AppCompatActivity {
         BTDeviceNames.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                SelectedDevice = bluetoothAdapter.getRemoteDevice(dict.get(parent.getItemAtPosition(position).toString()));
 //                String Name = parent.getItemAtPosition(position).toString();
 //                Toast.makeText(parent.getContext(), "Selected: " + Name, Toast.LENGTH_LONG).show();
 
@@ -62,6 +69,7 @@ public class BluetoothSelection extends AppCompatActivity {
 
             @Override
             public void onNothingSelected(AdapterView<?> adapterView) {
+                adapterView.setSelection(0);
 
             }
         });
@@ -79,16 +87,31 @@ public class BluetoothSelection extends AppCompatActivity {
                 //Toast.makeText(getApplicationContext(), "Searching ", Toast.LENGTH_LONG).show();
             }
         });
+        Button button_Connect = (Button)  findViewById(R.id.button_Connect);
+        button_Connect.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(SelectedDevice != null){
+
+                    ConnectThread Connection = new ConnectThread(SelectedDevice);
+
+
+                    //Toast.makeText(getApplicationContext(), "Selected Device: " + SelectedDevice.getName(), Toast.LENGTH_LONG).show();
+                    Connection.run();
+                    bluetoothAdapter.cancelDiscovery();
+                }
+            }
+        });
     }
 
     private boolean checkCoarseLocationPermission() {
         //checks all needed permissions
         if(ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED){
             ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.ACCESS_COARSE_LOCATION}, REQUEST_ACCESS_COARSE_LOCATION);
-            Toast.makeText(getApplicationContext(), "Permissions NOT ok ", Toast.LENGTH_LONG).show();
+            //Toast.makeText(getApplicationContext(), "Permissions NOT ok ", Toast.LENGTH_LONG).show();
             return false;
         }else{
-            Toast.makeText(getApplicationContext(), "Permissions ok ", Toast.LENGTH_LONG).show();
+            //Toast.makeText(getApplicationContext(), "Permissions ok ", Toast.LENGTH_LONG).show();
             return true;
         }
 
@@ -111,15 +134,17 @@ public class BluetoothSelection extends AppCompatActivity {
                 String deviceHardwareAddress = device.getAddress(); // MAC address
                 if (deviceName/*.isEmpty()*/ == null) {
                     BTDevices.add(deviceHardwareAddress);
+                    dict.put(deviceHardwareAddress, deviceHardwareAddress);
                 } else {
                     BTDevices.add(deviceName);
+                    dict.put(deviceName, deviceHardwareAddress);
                 }
                 //arrayAdapter.clear();
                 //arrayAdapter.addAll(BTDevices);
                 //arrayAdapter.notifyDataSetChanged();
-                Toast.makeText(getApplicationContext(), "Found: " + deviceName + ", " + deviceHardwareAddress, Toast.LENGTH_LONG).show();
+                //Toast.makeText(getApplicationContext(), "Found: " + deviceName + ", " + deviceHardwareAddress, Toast.LENGTH_LONG).show();
             }
-            Toast.makeText(getApplicationContext(), "List: " + BTDevices, Toast.LENGTH_LONG).show();
+            //Toast.makeText(getApplicationContext(), "List: " + BTDevices, Toast.LENGTH_LONG).show();
         }
     };
 
